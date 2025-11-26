@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 1. Serviço MySQL (Banco de Dados)
+  db:
+    image: mysql:8.0
+    container_name: laravel_db
+    restart: always
+    environment:
+      # Credenciais do Banco de Dados
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: laravel_crud
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: laravel_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Serviço da Aplicação Laravel (PHP-FPM, com Composer)
+  app:
+    # Usa o Dockerfile.app que instala PHP e Composer
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    restart: always
+    # Mapeamento do código: P1Laravel (host) -> /var/www/html (container)
+    volumes:
+      - ./P1Laravel:/var/www/html 
+    depends_on:
+      - db
+    
+    # === CORREÇÃO DE PERMISSÕES ===
+    # Garante que o usuário www-data tenha permissão de escrita no storage/cache
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/storage
+      && chown -R www-data:www-data /var/www/html/bootstrap/cache
+      && chmod -R 775 /var/www/html/storage
+      && chmod -R 775 /var/www/html/bootstrap/cache
+      && php-fpm"
+
+  # 3. Serviço Nginx (Servidor Web)
+  nginx:
+    image: nginx:stable-alpine
+    container_name: laravel_nginx
+    restart: always
+    ports:
+      - "8080:80" # Acessível em http://localhost:8080
+    volumes:
+      # Mapeamento do código: P1Laravel (host) -> /var/www/html (container)
+      - ./P1Laravel:/var/www/html
+      # Mapeamento da configuração do Nginx
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+# Volumes para persistência dos dados do MySQL
+volumes:
+  db_data:
+    driver: local
