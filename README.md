@@ -18,9 +18,13 @@ A estrutura é organizada para separar as configurações do Docker do código d
 Arquivo/Pasta : Função 
 
 docker-compose.yml : Define e orquestra os serviços (db, app, nginx).
+
 Dockerfile : Imagem do PHP-FPM que instala o Composer. 
+
 docker/nginx/default.conf : Configuração do Nginx. 
+
 P1Laravel/ : CÓDIGO LARAVEL COMPLETO (Inclui Controller, Model, Rotas, Views). 
+
 P1Laravel/database/migrations : Criação da tabela categories (nome, descricao, timestamps). 
 
 ---
